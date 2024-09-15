@@ -1,43 +1,51 @@
 <script>
   import CreatePollComponent from './lib/CreatePollComponent.svelte';
+  import CreateUserComponent from './lib/CreateUserComponent.svelte';
   import VoteComponent from './lib/VoteComponent.svelte';
 
-  // Track which component to display: createPoll or vote
-  let currentComponent = '';  // default to CreatePollComponent
-  let polls = [];
+  let username = '';
+  let userCreated = false;
+  let showCreatePoll = false;
+  let showVotePoll = false;
 
-  // Fetch polls for the VoteComponent
-  async function fetchPolls() {
-    const response = await fetch('http://localhost:8080/polls');
-    if (response.ok) {
-      polls = await response.json();
-    } else {
-      alert('Failed to fetch polls');
-    }
+  function handleUserCreated(createdUsername) {
+    username = createdUsername;
+    userCreated = true;
   }
 
-  // Switch to VoteComponent
-  function showVoteComponent() {
-    currentComponent = 'vote';
+  // Show create poll form
+  function showCreatePollForm() {
+    showCreatePoll = true;
+    showVotePoll = false;
   }
 
-  // Switch to CreatePollComponent
-  function showCreatePollComponent() {
-    currentComponent = 'createPoll';
+  // Show vote poll options
+  function showVotePollOptions() {
+    showCreatePoll = false;
+    showVotePoll = true;
   }
 </script>
 
-<nav>
-  <button on:click={showCreatePollComponent}>Create Poll</button>
-  <button on:click={showVoteComponent}>Vote</button>
-</nav>
-
 <main>
-  {#if currentComponent === 'createPoll'}
-    <CreatePollComponent />
+  <!-- User Registration -->
+  {#if !userCreated}
+    <CreateUserComponent onUserCreated={handleUserCreated} />
   {/if}
 
-  {#if currentComponent === 'vote'}
-    <VoteComponent />
+  <!-- Options After Registration -->
+  {#if userCreated}
+    <h2>Welcome, {username}!</h2>
+    <button on:click={showCreatePollForm}>Create a Poll</button>
+    <button on:click={showVotePollOptions}>Vote on a Poll</button>
+
+    <!-- Create Poll Form -->
+    {#if showCreatePoll}
+      <CreatePollComponent/>
+    {/if}
+
+    <!-- Vote on a Poll -->
+    {#if showVotePoll}
+      <VoteComponent username={username} />
+    {/if}
   {/if}
 </main>
